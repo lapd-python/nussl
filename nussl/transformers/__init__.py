@@ -28,5 +28,6 @@ Imports for transformers classes. More than meets the eye.
 """
 
 from .transformer_nmf import TransformerNMF
+from .transformer_deep_clustering import TransformerDeepClustering
 
-__all__ = ['TransformerNMF']
+__all__ = ['TransformerNMF', 'TransformerDeepClustering']

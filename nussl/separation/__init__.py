@@ -10,6 +10,9 @@ from .repet import Repet
 from .repet_sim import RepetSim
 from .ft2d import FT2D
 
+# Melody-based methods
+from .melodia import Melodia
+
 # Spatialization based methods
 from .duet import Duet
 from .projet import Projet
@@ -20,7 +23,8 @@ from .ideal_mask import IdealMask
 from .overlap_add import OverlapAdd
 from .ica import ICA
 from .high_low_pass_filter import HighLowPassFilter
+from .deep_clustering import DeepClustering
 
 __all__ = ['SeparationBase', 'MaskSeparationBase',
-           'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'IdealMask', 'OverlapAdd',
-           'ICA', 'HighLowPassFilter', 'NMF_MFCC']
+           'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'Melodia','IdealMask', 'OverlapAdd',
+           'ICA', 'HighLowPassFilter', 'NMF_MFCC', 'DeepClustering']
