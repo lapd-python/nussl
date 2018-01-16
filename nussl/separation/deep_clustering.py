@@ -51,7 +51,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     """
     def __init__(self, input_audio_signal, 
                  mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
-                 model_path='/home/prem/models/deep_clustering_vocal_44k_long.model', 
+                 model_path='/media/ext/models/deep_clustering_vocal_44k_long.model', 
                  num_sources = 2,
                  do_mono=False,
                  resample_rate=44100,
