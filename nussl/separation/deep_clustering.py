@@ -52,7 +52,10 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, 
                  mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
                  model_path='/media/ext/models/deep_clustering_vocal_44k_long.model', 
-                 num_sources = 2,
+                 num_sources=2,
+                 num_layers=4,
+                 hidden_size=500,
+                 embedding_size=20,
                  do_mono=False,
                  resample_rate=44100,
                  use_librosa_stft=False,
@@ -74,11 +77,12 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.mel_spectrogram = None
         self.silence_mask = None
         self.cutoff = cutoff
-        self.model = TransformerDeepClustering(num_layers=4,
-                                 hidden_size=500,
-                                embedding_size=20).cuda()
+        self.model = TransformerDeepClustering(num_layers=num_layers,
+                                 hidden_size=hidden_size,
+                                embedding_size=embedding_size).cuda()
         self.load_model(model_path)
         self.clusterer = KMeans(n_clusters=self.num_sources)
+        self.embeddings = None
         
         self.do_mono = do_mono
 
@@ -104,9 +108,9 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     
     def deep_clustering(self):
         input_data = Variable(torch.FloatTensor(self.mel_spectrogram)).cuda()
-        embeddings = self.model(input_data)
-        self.embeddings = embeddings.view(-1, embeddings.size(-1)).cpu().data.numpy()
-        
+        if self.embeddings is None:
+            embeddings = self.model(input_data)
+            self.embeddings = embeddings.view(-1, embeddings.size(-1)).cpu().data.numpy()
         self.clusterer.fit(self.embeddings)
         
         assignments = self.clusterer.labels_ + 1
@@ -131,7 +135,9 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     
     def run(self):
         self._compute_spectrograms()
+        print 'computed spectrograms'
         self.assignments = self.deep_clustering()
+        print 'ran deep clustering'
         
         uncollated_masks = []
         for i in range(self.audio_signal.num_channels):

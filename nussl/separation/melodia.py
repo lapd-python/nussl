@@ -112,11 +112,14 @@ class Melodia(mask_separation_base.MaskSeparationBase):
             previous_time = time
 
         melody_signal = np.asarray(melody_signal)
-        melody_signal *= 0.8 / float(np.max(melody_signal))
+        scale = float(np.max(melody_signal))
+        if scale == 0:
+            scale = 1
+        melody_signal *= 0.8 / scale
         melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]
         melody_signal = np.asarray(melody_signal)
         melody_signal = melody_signal[:, 0:self.audio_signal.signal_length]
-        melody_signal = AudioSignal(audio_data_array=melody_signal, sample_rate=sample_rate)
+        melody_signal = AudioSignal(audio_data_array=melody_signal, sample_rate=sample_rate, stft_params=self.audio_signal.stft_params)
 
         self.melody_signal = melody_signal
         return melody_signal
@@ -155,7 +158,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         # separate the mixture foreground melody by masking
         if self.melody_signal is None:
             self.extract_melody()
-            self.create_melody_signal(100)
+            self.create_melody_signal(200)
 
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
         foreground_mask[0:self.high_pass_cutoff, :] = 0
