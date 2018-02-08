@@ -136,9 +136,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     
     def run(self):
         self._compute_spectrograms()
-        print 'computed spectrograms'
         self.assignments = self.deep_clustering()
-        print 'ran deep clustering'
         
         uncollated_masks = []
         for i in range(self.audio_signal.num_channels):
