@@ -5,6 +5,7 @@ import librosa
 import numpy as np
 
 from ..transformers import TransformerDeepClustering
+from sklearn.decomposition import PCA
 import mask_separation_base
 import masks
 
@@ -174,6 +175,11 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.sources.append(source)
 
         return self.sources
+    
+    def project_embeddings(self, num_dimensions):
+        transform = PCA(n_components=num_dimensions)
+        output_transform = transform.fit_transform(self.embeddings)
+        return output_transform
         
     def plot(self):
         """ Plots relevant information for deep clustering onto the active figure, given by matplotlib.pyplot.figure()
@@ -184,10 +190,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         Returns:
             None
         """
-        from sklearn.decomposition import PCA as Transform
         grid = GridSpec(6, 10)
-        transform = Transform(n_components=2)
-        output_transform = transform.fit_transform(self.embeddings)
+        output_transform = self.project_embeddings(2)
         plt.subplot(grid[:3, 3:])
         plt.imshow(np.mean(self.mel_spectrogram, axis=0).T, origin='lower', aspect='auto', cmap='magma')
         plt.xticks([])
