@@ -51,12 +51,14 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         plt.show()    
     """
     def __init__(self, input_audio_signal, 
-                 mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
                  model_path='/media/ext/models/deep_clustering_vocal_44k_long.model', 
                  num_sources=2,
                  num_layers=4,
                  hidden_size=500,
+                 max_distance=1,
                  embedding_size=20,
+                 num_mels=150,
                  do_mono=False,
                  resample_rate=44100,
                  use_librosa_stft=False,
@@ -68,11 +70,12 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.audio_signal.resample(self.resample_rate)
             
         self.use_librosa_stft = use_librosa_stft
-        self.num_mels = 150
+        self.num_mels = num_mels
         self.num_sources = num_sources
         self.num_fft = self.audio_signal.stft_params.n_fft_bins
         self.mel_filter_bank = librosa.filters.mel(self.resample_rate, self.num_fft, self.num_mels).T
-        self.inverse_mel_filter_bank = np.linalg.pinv(self.mel_filter_bank)        
+        self.inverse_mel_filter_bank = np.linalg.pinv(self.mel_filter_bank) 
+        self.max_distance = max_distance
         
         self.stft = None
         self.mel_spectrogram = None
@@ -116,8 +119,9 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         
         assignments = self.clusterer.labels_ + 1
         self.assignments = assignments.reshape(self.mel_spectrogram.shape) 
-        return self.assignments
-    
+        self.centroids = self.clusterer.cluster_centers_
+        
+            
     def _extract_masks(self, ch):
         if self.audio_signal.stft_data is None:
             raise ValueError('Cannot extract masks with no signal_stft data')
@@ -125,18 +129,34 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         channel_mask_list = []
         
         for cluster_index in range(1, self.num_sources + 1):
-            mask = ((self.silence_mask[ch, :, :] * self.assignments[ch, :, :]) == cluster_index)
+            if self.mask_type == self.BINARY_MASK:
+                mask = ((self.silence_mask[ch, :, :] * self.assignments[ch, :, :]) == cluster_index)
+            elif self.mask_type == self.SOFT_MASK:
+                distances = np.sqrt(np.sum((self.embeddings - self.centroids[cluster_index-1])**2, axis=-1))
+                distances += distances.min()
+                distances /= (distances.max() + 1e-7)
+                distances[distances > self.max_distance] = 1
+                distances = 1 - distances.reshape(self.mel_spectrogram.shape)
+                mask = (self.silence_mask[ch, :, :] * distances[ch, :, :])
             mask = np.dot(mask, self.inverse_mel_filter_bank).T
             mask += np.abs(mask.min())
             mask /= (np.max(mask) + 1e-7)
             channel_mask_list.append(mask)
+        
+        if self.mask_type == self.SOFT_MASK:
+            data = np.stack(channel_mask_list, axis=-1)
+            original_shape = data.shape
+            data  = data.reshape(-1, 2)**3
+            data = (data.T / np.sum(data, axis=-1)).T
+            data = data.reshape(original_shape)
+            channel_mask_list = [data[:, :, i] for i in range(self.num_sources)]
 
         return channel_mask_list
 
     
     def run(self):
         self._compute_spectrograms()
-        self.assignments = self.deep_clustering()
+        self.deep_clustering()
         
         uncollated_masks = []
         for i in range(self.audio_signal.num_channels):
@@ -153,7 +173,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
                 mask = np.round(mask)
                 mask_object = masks.BinaryMask(mask)
             elif self.mask_type == self.SOFT_MASK:
-                raise NotImplementedError("Soft mask not implemented yet! Try binary mask.")
+                
+                mask_object = masks.SoftMask(mask)
             else:
                 raise ValueError('Unknown mask type {}!'.format(self.mask_type))
             self.masks.append(mask_object)
