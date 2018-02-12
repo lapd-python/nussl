@@ -68,3 +68,5 @@ NUSSL_EXTRA_AUDIO_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'audio_metadata.j
 NUSSL_EXTRA_BENCHMARK_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'benchmark_metadata.json')
 NUSSL_EXTRA_MODEL_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'model_metadata.json')
 
+USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
+
