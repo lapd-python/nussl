@@ -14,6 +14,8 @@ import json
 import os
 import sys
 import json
+import hashlib
+
 
 from six.moves.urllib_parse import urljoin
 from six.moves.urllib.error import HTTPError
@@ -594,7 +596,13 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
     download = False
     if os.path.exists(file_path):
         if file_hash is not None:
-            pass
+            # compare the provided hash with the hash of the file currently at file_path
+            current_hash = _hash_file(file_path)
+            # if the hashes are equal, we alreay have the file we need, so don't download
+            if not _check_hashes(file_hash, current_hash):
+                print("checked hashes, they're not equal")
+                download = True
+
 
     else:
         download = True
@@ -623,6 +631,14 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
                 os.remove(file_path)
             raise e
 
+        # check hash of received file to see if it matches the provided hash
+        if file_hash is not None:
+            download_hash = _hash_file(file_path)
+            if not _hash_file(file_hash, download_hash):
+                # the downloaded file is not what it should be. Get rid of it.
+                os.remove(file_path)
+                print("downloaded file has been deleted because of a hash mismatch.")
+
     # try:
     #     with open(file_path, 'w') as f:
     #         remote_file = urllib.urlopen(url)
@@ -630,6 +646,52 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
     #         remote_file.close()
     # except Exception as e:
     #     raise e
+
+
+def _hash_file(file_path, chunk_size=65535):
+    """
+
+    Args:
+        file_path: System path to the file to be hashed
+        chunk_size: size of chunks
+
+    Returns:
+        file_hash: the SHA256 hashed string in hex
+
+    """
+    hasher = hashlib.sha256()
+
+    with open(file_path, 'rb') as fpath_file:
+        for chunk in iter(lambda: fpath_file.read(chunk_size), b''):
+            hasher.update(chunk)
+
+    return hasher.hexdigest()
+
+
+def _check_hashes(hash_a, hash_b):
+    """
+
+    Args:
+        hash_a: hash string of hex chars to be compared
+        hash_b: hash string of hex chars to be compared
+
+    Returns:
+        bool: True if hashes all match, false otherwise
+
+    """
+
+    for h in [hash_a, hash_b]:
+        # check to make sure hashes are strings; if they're bytes, convert to hex
+        if isinstance(h, (bytes, bytearray)):
+            hash_to_check = h.hex()
+        else:
+            hash_to_check = h
+
+    # check if hashes are equal
+    if hash_a != hash_b:
+        return False
+
+    return True
 
 
 # This is wholesale from keras

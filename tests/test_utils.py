@@ -8,6 +8,8 @@ import unittest
 import nussl
 import numpy as np
 from scipy import signal
+import constants
+from six.moves.urllib_parse import urljoin
 
 class TestUtils(unittest.TestCase):
     """
@@ -86,3 +88,15 @@ class TestUtils(unittest.TestCase):
         example_name = 'dev1_female3_inst_mix.wav'
         nussl.utils.print_available_audio_files()
         # nussl.utils.download_audio_example(example_name, '')
+
+    def test_download_hashing(self):
+        example_name = 'dev1_female3_inst_mix.wav'
+        url = 'https://ethman.github.io/nussl-extras/audio/'
+        file_url = urljoin(url, example_name)
+        # check to make sure downloaded file is removed because of a mismatched hash
+        nussl.utils._download_file(example_name, file_url, '', url, file_hash='')
+        assert not os.path.exists(file_path)
+
+if __name__ == '__main__':
+    unittest.main()
+

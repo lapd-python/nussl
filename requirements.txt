@@ -5,7 +5,7 @@
 audioread == 2.1.4
 
 # nussl/audio_signal.py: 22
-dynd == 0.7.3.dev1
+# dynd == 0.7.3.dev1
 
 # tests/projet_reference/projet_python_files/delaysPROJET.py: 49
 joblib == 0.11
