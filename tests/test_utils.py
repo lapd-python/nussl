@@ -4,6 +4,8 @@
 Tests for nussl/utils.py
 """
 
+import os
+
 import unittest
 import nussl
 import numpy as np
@@ -90,12 +92,31 @@ class TestUtils(unittest.TestCase):
         # nussl.utils.download_audio_example(example_name, '')
 
     def test_download_hashing(self):
-        example_name = 'dev1_female3_inst_mix.wav'
-        url = 'https://ethman.github.io/nussl-extras/audio/'
+        # example_name = 'dev1_female3_inst_mix.wav'
+        # url = 'https://ethman.github.io/nussl-extras/audio/'
+        example_name = 'torch-0.3.1-cp27-none-macosx_10_6_x86_64.whl'
+        url = 'http://download.pytorch.org/whl/'
         file_url = urljoin(url, example_name)
+
         # check to make sure downloaded file is removed because of a mismatched hash
-        nussl.utils._download_file(example_name, file_url, '', url, file_hash='')
-        assert not os.path.exists(file_path)
+        nussl.utils._download_file(example_name, file_url, '', '', file_hash='foobar')
+        assert not os.path.isfile(os.path.expanduser('~/.nussl/' + example_name))
+
+        # make sure file is downloaded regardless because no hash was provided
+        nussl.utils._download_file(example_name, file_url, '', '')
+        assert os.path.isfile(os.path.expanduser('~/.nussl/' + example_name))
+
+        # test ability to provide local_folder to change download location
+        nussl.utils._download_file(example_name, file_url, '~/.nussl/local_dir', '')
+        assert os.path.isfile(os.path.expanduser('~/.nussl/local_dir' + example_name))
+
+        # check to make sure file isn't downloaded and file already there is used because correct hash is provided
+        correct_hash = 'fc0894f970693fcdb369d887c1662ff96a069690747d79a43d18f6115808026b'
+        nussl.utils._download_file(example_name, file_url, '', '', file_hash=correct_hash)
+        assert os.path.isfile(os.path.expanduser('~/.nussl/' + example_name))
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

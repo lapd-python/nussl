@@ -22,9 +22,10 @@ from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlopen, Request
 
-from audio_signal import AudioSignal
-from separation import SeparationBase
-from separation import MaskSeparationBase
+# commented these out because they were causing circular import errors
+# from audio_signal import AudioSignal
+# from separation import SeparationBase
+# from separation import MaskSeparationBase
 
 import base64
 import json
@@ -499,7 +500,7 @@ def verify_mask_separation_base_list(mask_separation_list):
     return mask_separation_list
 
 
-def download_audio_example(example_name, local_folder):
+def download_audio_example(example_name, local_folder=None):
     """
 
     Args:
@@ -542,7 +543,7 @@ def print_available_audio_files():
         raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_AUDIO_METADATA_URL))
 
 
-def download_trained_model(model_name, local_folder):
+def download_trained_model(model_name, local_folder=None):
     """
 
     Args:
@@ -556,7 +557,7 @@ def download_trained_model(model_name, local_folder):
     _download_file(model_name, file_url, local_folder, constants.NUSSL_EXTRA_MODELS_URL)
 
 
-def download_benchmark_file(benchmark_name, local_folder):
+def download_benchmark_file(benchmark_name, local_folder=None):
     """
 
     Args:
@@ -579,16 +580,23 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
     Returns:
 
     """
-    if cache_dir is None:
-        cache_dir = os.path.expanduser(os.path.join('~', '.nussl'))
-    datadir_base = os.path.expanduser(cache_dir)
+    if local_folder not in [None, '']:
+        # local folder provided, let's create it if it doesn't exist and use it as datadir
+        if not os.path.exists(os.path.expanduser(local_folder)):
+            os.makedirs(os.path.expanduser(local_folder))
+        datadir = os.path.expanduser(local_folder)
 
-    if not os.access(datadir_base, os.W_OK):
-        datadir_base = os.path.join('/tmp', '.nussl')
+    else:
+        if cache_dir is None:
+            cache_dir = os.path.expanduser(os.path.join('~', '.nussl'))
+        datadir_base = os.path.expanduser(cache_dir)
 
-    datadir = os.path.join(datadir_base, cache_subdir)
-    if not os.path.exists(datadir):
-        os.makedirs(datadir)
+        if not os.access(datadir_base, os.W_OK):
+            datadir_base = os.path.join('/tmp', '.nussl')
+
+        datadir = os.path.join(datadir_base, cache_subdir)
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
 
     file_path = os.path.join(datadir, file_name)
     print('Saving file at {}'.format(file_path))
@@ -603,6 +611,8 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
                 print("checked hashes, they're not equal")
                 download = True
 
+        else:
+            download = True
 
     else:
         download = True
@@ -613,7 +623,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         def dl_progress(count, block_size, total_size):
             percent = int(count * block_size * 100 / total_size)
 
-            if percent < 100:
+            if percent <= 100:
                 sys.stdout.write('\r{}...{}%'.format(file_name, percent))
                 sys.stdout.flush()
 
@@ -634,7 +644,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         # check hash of received file to see if it matches the provided hash
         if file_hash is not None:
             download_hash = _hash_file(file_path)
-            if not _hash_file(file_hash, download_hash):
+            if not _check_hashes(file_hash, download_hash):
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
                 print("downloaded file has been deleted because of a hash mismatch.")
@@ -680,17 +690,12 @@ def _check_hashes(hash_a, hash_b):
 
     """
 
-    for h in [hash_a, hash_b]:
-        # check to make sure hashes are strings; if they're bytes, convert to hex
-        if isinstance(h, (bytes, bytearray)):
-            hash_to_check = h.hex()
-        else:
-            hash_to_check = h
-
     # check if hashes are equal
     if hash_a != hash_b:
+        print("hashes aren't equal")
         return False
 
+    print("hashes are equal")
     return True
 
 
