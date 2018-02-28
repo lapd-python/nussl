@@ -500,20 +500,6 @@ def verify_mask_separation_base_list(mask_separation_list):
     return mask_separation_list
 
 
-def download_audio_example(example_name, local_folder=None):
-    """
-
-    Args:
-        example_name:
-        local_folder:
-
-    Returns:
-
-    """
-    file_url = urljoin(constants.NUSSL_EXTRA_AUDIO_URL, example_name)
-    _download_file(example_name, file_url, local_folder, constants.NUSSL_EXTRA_AUDIO_URL)
-
-
 def print_available_audio_files():
     """
 
@@ -543,6 +529,27 @@ def print_available_audio_files():
         raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_AUDIO_METADATA_URL))
 
 
+
+def download_audio_example(example_name, local_folder=None):
+    """
+
+    Args:
+        example_name:
+        local_folder:
+
+    Returns:
+
+    """
+    file_metadata = _download_metadata(example_name, 'audio')
+    print("\naudio file metadata:")
+    print(json.dumps(file_metadata, indent=4))
+
+    file_hash = file_metadata['file_hash']
+
+    file_url = urljoin(constants.NUSSL_EXTRA_AUDIO_URL, example_name)
+    _download_file(example_name, file_url, local_folder, 'audio', file_hash=file_hash)
+
+
 def download_trained_model(model_name, local_folder=None):
     """
 
@@ -553,8 +560,14 @@ def download_trained_model(model_name, local_folder=None):
     Returns:
 
     """
+    file_metadata = _download_metadata(model_name, 'model')
+    print("\nmodel file metadata:")
+    print(json.dumps(file_metadata, indent=4))
+
+    file_hash = file_metadata['file_hash']
+
     file_url = urljoin(constants.NUSSL_EXTRA_MODELS_URL, model_name)
-    _download_file(model_name, file_url, local_folder, constants.NUSSL_EXTRA_MODELS_URL)
+    _download_file(model_name, file_url, local_folder, 'models', file_hash=file_hash)
 
 
 def download_benchmark_file(benchmark_name, local_folder=None):
@@ -567,8 +580,65 @@ def download_benchmark_file(benchmark_name, local_folder=None):
     Returns:
 
     """
+    file_metadata = _download_metadata(benchmark_name, 'benchmark')
+    print("\nbenchmark file metadata:")
+    print(json.dumps(file_metadata, indent=4))
+
+    file_hash = file_metadata['file_hash']
+
     file_url = urljoin(constants.NUSSL_EXTRA_BENCHMARKS_URL, benchmark_name)
-    _download_file(benchmark_name, file_url, local_folder, constants.NUSSL_EXTRA_BENCHMARKS_URL)
+    _download_file(benchmark_name, file_url, local_folder, 'benchmarks', file_hash=file_hash)
+
+
+
+def _download_metadata(file_name, file_type):
+
+    # metadata_files = {
+    #     'audio': 'audio_metadata.json',
+    #     'benchmark': 'benchmark_metadata.json',
+    #     'model': 'model_metadata.json',
+    # }
+
+    metadata_urls = {
+        'audio': constants.NUSSL_EXTRA_AUDIO_METADATA_URL,
+        'benchmark': constants.NUSSL_EXTRA_BENCHMARK_METADATA_URL,
+        'model': constants.NUSSL_EXTRA_MODEL_METADATA_URL,
+    }
+
+    metadata_labels = {
+        'audio': 'nussl Audio File metadata',
+        'benchmark': 'nussl Benchmarks metadata',
+        'model': 'nussl Models metadata',
+    }
+
+
+    if metadata_urls[file_type]:
+        metadata_url = metadata_urls[file_type]
+    else:
+        # wrong file type, return
+        print("metadata: wrong file type.")
+        return None
+
+    try:
+        request = Request(metadata_url)
+
+        request.add_header('Pragma', 'no-cache')
+        request.add_header('Cache-Control', 'max-age=0')
+        response = urlopen(request)
+
+        data = json.loads(response.read())
+        metadata = data[metadata_labels[file_type]]
+
+        for file_metadata in metadata:
+            if file_metadata['file_name'] == file_name:
+                return file_metadata
+
+        # TODO: do we raise an exception here if the file isn't found on the server?
+        print("Metadata: " + file_type + " file metadata not found on server")
+        return None
+
+    except Exception as e:
+        raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_AUDIO_METADATA_URL))
 
 
 def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, cache_dir=None):
@@ -576,6 +646,14 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
 
     Heavily inspired by and lovingly adapted from keras' `get_file` function:
     https://github.com/fchollet/keras/blob/afbd5d34a3bdbb0916d558f96af197af1e92ce70/keras/utils/data_utils.py#L109
+
+    Args:
+        file_name: name of the file located on the server
+        url: url of the file
+        local_folder:
+        cache_subdir:
+        file_hash:
+        cache_dir:
 
     Returns:
 
@@ -695,7 +773,6 @@ def _check_hashes(hash_a, hash_b):
         print("hashes aren't equal")
         return False
 
-    print("hashes are equal")
     return True
 
 
