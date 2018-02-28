@@ -163,6 +163,23 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
         return channel_mask_list
 
+    def generate_mask(self, ch, assignments):
+        """
+            Takes binary Mel spectrogram assignments and generates mask
+        """
+        if self.audio_signal.stft_data is None:
+            raise ValueError('Cannot extract masks with no signal_stft data')
+
+        mask = (self.silence_mask[ch, :, :] * assignments)
+        mask = np.dot(mask, self.inverse_mel_filter_bank).T
+        mask += np.abs(mask.min())
+        mask /= (np.max(mask) + 1e-7)
+        mask = np.round(mask)
+
+        mask = np.dstack([mask, mask])
+
+        return masks.BinaryMask(mask)
+
 
     def run(self):
         self._compute_spectrograms()
@@ -190,6 +207,17 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.masks.append(mask_object)
         return self.masks
 
+    def apply_mask(self, mask):
+        """
+            Applies individual mask and returns audio_signal object
+        """
+        source = copy.deepcopy(self.audio_signal)
+        source = source.apply_mask(mask)
+        source.stft_params = self.stft_params
+        source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+
+        return source
+
     def make_audio_signals(self):
         """ Applies each mask in self.masks and returns a list of audio_signal objects for each source.
         Returns:
@@ -197,11 +225,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         """
         self.sources = []
         for mask in self.masks:
-            source = copy.deepcopy(self.audio_signal)
-            source = source.apply_mask(mask)
-            source.stft_params = self.stft_params
-            source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-            self.sources.append(source)
+            self.sources.append(self.apply_mask(mask))
 
         return self.sources
 
