@@ -176,7 +176,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         mask /= (np.max(mask) + 1e-7)
         mask = np.round(mask)
 
-        mask = np.dstack([mask, mask])
+        # mask = np.dstack([mask, mask])
 
         return masks.BinaryMask(mask)
 
