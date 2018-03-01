@@ -86,10 +86,10 @@ class TestUtils(unittest.TestCase):
         result = nussl.utils.add_mismatched_arrays(short_array, short_array, truncate=True)
         assert all(np.equal(result, expected_result))
 
-    def test_download_audio_example(self):
-        example_name = 'dev1_female3_inst_mix.wav'
-        nussl.utils.print_available_audio_files()
-        # nussl.utils.download_audio_example(example_name, '')
+    # def test_download_audio_example(self):
+    #     example_name = 'dev1_female3_inst_mix.wav'
+    #     nussl.utils.print_available_audio_files()
+    #     # nussl.utils.download_audio_example(example_name, '')
 
     # def test_download_hashing(self):
     #     # example_name = 'dev1_female3_inst_mix.wav'
@@ -119,28 +119,29 @@ class TestUtils(unittest.TestCase):
 
         audio_name = 'K0149.wav'
 
-        nussl.utils.download_audio_example(audio_name)
+        result = nussl.utils.download_audio_example(audio_name)
 
+        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/audio/' + audio_name))
         os.remove(os.path.expanduser('~/.nussl/audio/' + audio_name))
-
 
     def test_model_download(self):
 
         model_name = 'deep_clustering_model.h5'
 
-        nussl.utils.download_trained_model(model_name)
+        result = nussl.utils.download_trained_model(model_name)
 
+        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/models/' + model_name))
         os.remove(os.path.expanduser('~/.nussl/models/' + model_name))
-
 
     def test_benchmark_download(self):
 
         benchmark_name = 'benchmark.npy'
 
-        nussl.utils.download_benchmark_file(benchmark_name)
+        result = nussl.utils.download_benchmark_file(benchmark_name)
 
+        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/benchmarks/' + benchmark_name))
         os.remove(os.path.expanduser('~/.nussl/benchmarks/' + benchmark_name))
 

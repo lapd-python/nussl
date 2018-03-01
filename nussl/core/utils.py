@@ -501,7 +501,10 @@ def verify_mask_separation_base_list(mask_separation_list):
 
 
 def print_available_audio_files():
-    """
+    """gets a list of available audio files for download from the server and displays them
+    to the user.
+ls
+    Args:
 
     Returns:
 
@@ -531,13 +534,14 @@ def print_available_audio_files():
 
 
 def download_audio_example(example_name, local_folder=None):
-    """
+    """downloads the specified Audio file from the NUSSL server.
 
     Args:
-        example_name:
-        local_folder:
+        example_name: name of the audio file to download
+        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
+        The return value. True for success, False otherwise.
 
     """
     file_metadata = _download_metadata(example_name, 'audio')
@@ -547,17 +551,20 @@ def download_audio_example(example_name, local_folder=None):
     file_hash = file_metadata['file_hash']
 
     file_url = urljoin(constants.NUSSL_EXTRA_AUDIO_URL, example_name)
-    _download_file(example_name, file_url, local_folder, 'audio', file_hash=file_hash)
+    result = _download_file(example_name, file_url, local_folder, 'audio', file_hash=file_hash)
+
+    return result
 
 
 def download_trained_model(model_name, local_folder=None):
-    """
+    """downloads the specified Model file from the NUSSL server.
 
     Args:
-        model_name:
-        local_folder:
+        model_name: name of the trained model to download
+        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
+        The return value. True for success, False otherwise.
 
     """
     file_metadata = _download_metadata(model_name, 'model')
@@ -567,17 +574,20 @@ def download_trained_model(model_name, local_folder=None):
     file_hash = file_metadata['file_hash']
 
     file_url = urljoin(constants.NUSSL_EXTRA_MODELS_URL, model_name)
-    _download_file(model_name, file_url, local_folder, 'models', file_hash=file_hash)
+    result = _download_file(model_name, file_url, local_folder, 'models', file_hash=file_hash)
+
+    return result
 
 
 def download_benchmark_file(benchmark_name, local_folder=None):
-    """
+    """downloads the specified Benchmark file from the NUSSL server.
 
     Args:
-        benchmark_name:
-        local_folder:
+        benchmark_name: name of benchmark to download
+        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
+        The return value. True for success, False otherwise.
 
     """
     file_metadata = _download_metadata(benchmark_name, 'benchmark')
@@ -587,11 +597,23 @@ def download_benchmark_file(benchmark_name, local_folder=None):
     file_hash = file_metadata['file_hash']
 
     file_url = urljoin(constants.NUSSL_EXTRA_BENCHMARKS_URL, benchmark_name)
-    _download_file(benchmark_name, file_url, local_folder, 'benchmarks', file_hash=file_hash)
+    result = _download_file(benchmark_name, file_url, local_folder, 'benchmarks', file_hash=file_hash)
 
+    return result
 
 
 def _download_metadata(file_name, file_type):
+    """downloads the metadata file for the specified file type and finds the entry for the specified file.
+
+    Args:
+        file_name: name of the file's metadata to locate
+        file_type: type of file, determines the JSON file to download. One of [audio, model, benchmark].
+
+    Returns:
+        metadata for the specified file, or None if it could not be located.
+
+
+    """
 
     # metadata_files = {
     #     'audio': 'audio_metadata.json',
@@ -650,12 +672,12 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
     Args:
         file_name: name of the file located on the server
         url: url of the file
-        local_folder:
-        cache_subdir:
-        file_hash:
+        local_folder: alternate folder in which to download the file
+        cache_subdir: subdirectory of folder in which to download flie
+        file_hash: expected hash of downloaded file
         cache_dir:
 
-    Returns:
+    Returns: True if file was downloaded, False or Exception otherwise
 
     """
     if local_folder not in [None, '']:
@@ -726,6 +748,12 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
                 print("downloaded file has been deleted because of a hash mismatch.")
+                return False
+
+        return True
+
+    else:
+        return False
 
     # try:
     #     with open(file_path, 'w') as f:
