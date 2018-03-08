@@ -68,7 +68,7 @@ class AudioSignal(object):
             ``None`` by default, this can be initialized at instantiation.
         stft_params (:obj:`StftParams`): Container for all settings for doing a STFT. Has same lifespan as AudioSignal
             object.
-  
+
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None,
@@ -253,10 +253,10 @@ class AudioSignal(object):
     @property
     def file_name(self):
         """ (str): The name of the file wth extension, NOT the full path.
-        
+
         Notes:
             This will return ``None`` if this :class:`AudioSignal` object was not loaded from a file.
-        
+
         See Also:
             :attr:`self.path_to_input_file`
         """
@@ -286,10 +286,10 @@ class AudioSignal(object):
     def freq_vector(self):
         """ (:obj:`np.ndarray`): A 1D numpy array with frequency values that correspond
         to each frequency bin (vertical axis) for the STFT.
-            
+
         Raises:
             AttributeError: If :attr:`stft_data` is ``None``. Run :func:`stft` before accessing this.
-            
+
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
@@ -299,7 +299,7 @@ class AudioSignal(object):
     def time_bins_vector(self):
         """(:obj:`np.ndarray`): A 1D numpy array with time values that correspond
         to each time bin (horizontal axis) in the STFT.
-            
+
         Raises:
             AttributeError: If :attr:`stft_data` is ``None``. Run :func:`stft` before accessing this.
         """
@@ -330,7 +330,7 @@ class AudioSignal(object):
     @property
     def active_region_is_default(self):
         """ (bool): True if active region is the full length of :attr:`audio_data`.
-        
+
         See Also:
             * :func:`set_active_region` for a full description of active regions in :class:`AudioSignal`
             * :func:`set_active_region_to_default`
@@ -351,15 +351,15 @@ class AudioSignal(object):
         """ (:obj:`np.ndarray`): Returns a real valued ``np.array`` with power spectrogram data.
         The power spectrogram is defined as (STFT)^2, where ^2 is element-wise squaring
         of entries of the STFT. Same shape as :attr:`stft_data`.
-        
+
         Raises:
             AttributeError: if :attr:`stft_data` is ``None``. Run :func:`stft` before accessing this.
-            
+
         See Also:
             * :attr:`stft_data` complex-valued Short-time Fourier Transform data.
             * :attr:`power_magnitude_data`
             * :func:`get_power_spectrogram_channel`
-            
+
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate power_spectrogram_data because self.stft_data is None')
@@ -368,18 +368,18 @@ class AudioSignal(object):
     @property
     def magnitude_spectrogram_data(self):
         """ (:obj:`np.ndarray`): Returns a real valued ``np.array`` with magnitude spectrogram data.
-        
-        The power spectrogram is defined as Abs(STFT), the element-wise absolute value of every item in the STFT. 
+
+        The power spectrogram is defined as Abs(STFT), the element-wise absolute value of every item in the STFT.
         Same shape as :attr:`stft_data`.
-        
+
         Raises:
             AttributeError: if :attr:`stft_data` is ``None``. Run :func:`stft` before accessing this.
-            
+
         See Also:
             * :attr:`stft_data` complex-valued Short-time Fourier Transform data.
             * :attr:`power_spectrogram_data`
             * :func:`get_magnitude_spectrogram_channel`
-            
+
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate magnitude_spectrogram_data because self.stft_data is None')
@@ -388,10 +388,10 @@ class AudioSignal(object):
     @property
     def has_data(self):
         """ Returns False if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns True.
-        
+
         Returns:
             Returns False if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns True.
-            
+
         """
         return self.has_audio_data or self.has_stft_data
 
@@ -561,7 +561,7 @@ class AudioSignal(object):
         """
         Resets the active region of this :class:`AudioSignal` object to it default value of the entire
         :attr:`audio_data` array.
-        
+
         See Also:
             * :func:`set_active_region` for an explanation of active regions within the :class:`AudioSignal`.
 
@@ -572,10 +572,10 @@ class AudioSignal(object):
     def next_window_generator(self, window_size, hop_size, convert_to_samples=False):
         """
         Not Implemented
-        
+
         Raises:
             NotImplemented
-            
+
         Args:
             window_size:
             hop_size:
@@ -726,7 +726,7 @@ class AudioSignal(object):
         """
         Applies the input mask to the time-frequency representation in this AudioSignal object and returns a new
         AudioSignal object with the mask applied.
-        
+
         Args:
             mask (:obj:`MaskBase`-derived object): A :ref:`mask_base`-derived object containing a mask
 
@@ -858,7 +858,7 @@ class AudioSignal(object):
 
         Args:
             other (:class:`AudioSignal`): :class:`AudioSignal` to concatenate with the current one.
-            
+
         """
         self._verify_audio(other)
 
@@ -1150,7 +1150,7 @@ class AudioSignal(object):
 
     def rms(self):
         """ Calculates the root-mean-square of :attr:`audio_data`.
-        
+
         Returns:
             (float): Root-mean-square of :attr:`audio_data`.
 
@@ -1160,15 +1160,15 @@ class AudioSignal(object):
     def get_closest_frequency_bin(self, freq):
         """
         Returns index of the closest element to freq
-        
+
         Args:
             freq: (int) frequency to retrieve in Hz
 
-        Returns: 
+        Returns:
             (int) index of closest frequency to input freq
 
         Example:
-            
+
             .. code-block:: python
                 :linenos:
                 # Make a low pass filter starting around 1200 Hz
@@ -1236,10 +1236,10 @@ class AudioSignal(object):
 
         Parameters:
             n (int): index of channel to get. **0-based**
-            
+
         Returns:
             (:obj:`np.array`): The audio data in the n-th channel of the signal, 1D
-            
+
         See Also:
             * :func:`get_channels`: Generator for looping through channels of :attr:`audio_data`.
             * :func:`get_stft_channel`: Gets stft data from a specific channel.
@@ -1254,7 +1254,7 @@ class AudioSignal(object):
 
         Yields:
             (:obj:`np.array`): The audio data in the next channel of this signal as a 1D ``np.ndarray``.
-            
+
         See Also:
             * :func:`get_channel`: Gets audio data from a specific channel.
             * :func:`get_stft_channel`: Gets stft data from a specific channel.
@@ -1275,7 +1275,7 @@ class AudioSignal(object):
 
         Returns:
             (:obj:`np.array`): the stft data in the n-th channel of the signal, 2D
-            
+
         See Also:
             * :func:`get_stft_channels`: Generator for looping through channels from :attr:`stft_data`.
             * :func:`get_channel`: Gets audio data from a specific channel.
@@ -1290,7 +1290,7 @@ class AudioSignal(object):
 
         Yields:
             (:obj:`np.array`): The STFT data in the next channel of this signal as a 2D ``np.ndarray``.
-            
+
         See Also:
             * :func:`get_stft_channel`: Gets stft data from a specific channel.
             * :func:`get_channel`: Gets audio data from a specific channel.
@@ -1303,7 +1303,7 @@ class AudioSignal(object):
     def make_audio_signal_from_channel(self, n):
         """
         Makes a new :class:`AudioSignal` object from with data from channel ``n``.
-        
+
         Args:
             n (int): index of channel to make a new signal from. **0-based**
 
