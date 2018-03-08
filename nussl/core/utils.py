@@ -508,6 +508,17 @@ def print_available_audio_files():
 
     Returns:
 
+    Example:
+        nussl.utils.print_available_audio_files()
+
+        File Name                                Duration (sec)  Size       Description
+        dev1_female3_inst_mix.wav                10.0            1.7MiB     Instantaneous mixture of three female speakers talking in a stereo field.
+        dev1_female3_synthconv_130ms_5cm_mix.wav 10.0            1.7MiB     Three female speakers talking in a stereo field, with 130ms of inter-channel delay.
+        K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.
+        K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C. (A440)
+
+        Last updated 2018-03-06
+
     """
     try:
         request = Request(constants.NUSSL_EXTRA_AUDIO_METADATA_URL)
@@ -540,6 +551,15 @@ def print_available_trained_models():
 
     Returns:
 
+    Example:
+        nussl.utils.print_available_trained_models()
+
+        File Name                                For Class            Size       Description
+        deep_clustering_model.h5                 DeepClustering       48.1MiB    example Deep Clustering Keras model
+        deep_clustering_vocal_44k_long.model     DeepClustering       90.2MiB    trained DC model for vocal extraction
+
+        Last updated 2018-03-06
+
     """
     try:
         request = Request(constants.NUSSL_EXTRA_MODEL_METADATA_URL)
@@ -551,9 +571,9 @@ def print_available_trained_models():
         data = json.loads(response.read())
         file_metadata = data['nussl Models metadata']
 
-        print('{:30} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+        print('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
         for f in file_metadata:
-            print('{:30} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+            print('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
                                                        f['file_size'], f['file_description']))
         print('\nLast updated {}'.format(data['last_updated']))
         print('To download one of these files insert the file name '
@@ -572,6 +592,15 @@ def print_available_benchmark_files():
 
     Returns:
 
+    Example:
+        nussl.utils.print_available_benchmark_files()
+
+        File Name                                For Class            Size       Description
+        benchmark.npy                            example              11.0B      example benchmark file
+        example.npy                              test                 13.0B      test example
+
+        Last updated 2018-03-06
+
     """
     try:
         request = Request(constants.NUSSL_EXTRA_BENCHMARK_METADATA_URL)
@@ -583,9 +612,9 @@ def print_available_benchmark_files():
         data = json.loads(response.read())
         file_metadata = data['nussl Benchmarks metadata']
 
-        print('{:30} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+        print('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
         for f in file_metadata:
-            print('{:30} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+            print('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
                                                        f['file_size'], f['file_description']))
         print('\nLast updated {}'.format(data['last_updated']))
         print('To download one of these files insert the file name '
@@ -601,11 +630,15 @@ def download_audio_example(example_name, local_folder=None):
     """downloads the specified Audio file from the NUSSL server.
 
     Args:
-        example_name: name of the audio file to download
-        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
+        example_name: (String) name of the audio file to download
+        local_folder: (String) path to local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
-        The return value. True for success, False otherwise.
+        (String) path to the downloaded file
+
+    Example:
+        input_file = nussl.utils.download_audio_example('K0140.wav')
+        music = AudioSignal(input_file, offset=45, duration=20)
 
     """
     file_metadata = _download_metadata(example_name, 'audio')
@@ -622,11 +655,14 @@ def download_trained_model(model_name, local_folder=None):
     """downloads the specified Model file from the NUSSL server.
 
     Args:
-        model_name: name of the trained model to download
-        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
+        model_name: (String) name of the trained model to download
+        local_folder: (String)  a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
-        The return value. True for success, False otherwise.
+        (String) path to the downloaded file
+
+    Example:
+        model_path = nussl.utils.download_trained_model('deep_clustering_vocal_44k_long.model')
 
     """
     file_metadata = _download_metadata(model_name, 'model')
@@ -643,11 +679,11 @@ def download_benchmark_file(benchmark_name, local_folder=None):
     """downloads the specified Benchmark file from the NUSSL server.
 
     Args:
-        benchmark_name: name of benchmark to download
-        local_folder: a local folder in which to download the file, defaults to regular NUSSL directory
+        model_name: (String) name of the trained model to download
+        local_folder: (String)  a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
-        The return value. True for success, False otherwise.
+        (String) path to the downloaded file
 
     """
     file_metadata = _download_metadata(benchmark_name, 'benchmark')
@@ -664,11 +700,11 @@ def _download_metadata(file_name, file_type):
     """downloads the metadata file for the specified file type and finds the entry for the specified file.
 
     Args:
-        file_name: name of the file's metadata to locate
-        file_type: type of file, determines the JSON file to download. One of [audio, model, benchmark].
+        file_name: (String) name of the file's metadata to locate
+        file_type: (String) type of file, determines the JSON file to download. One of [audio, model, benchmark].
 
     Returns:
-        metadata for the specified file, or None if it could not be located.
+        (dict) metadata for the specified file, or None if it could not be located.
 
 
     """
@@ -728,14 +764,15 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
     https://github.com/fchollet/keras/blob/afbd5d34a3bdbb0916d558f96af197af1e92ce70/keras/utils/data_utils.py#L109
 
     Args:
-        file_name: name of the file located on the server
-        url: url of the file
-        local_folder: alternate folder in which to download the file
-        cache_subdir: subdirectory of folder in which to download flie
-        file_hash: expected hash of downloaded file
+        file_name: (String) name of the file located on the server
+        url: (String) url of the file
+        local_folder: (String) alternate folder in which to download the file
+        cache_subdir: (String) subdirectory of folder in which to download flie
+        file_hash: (String) expected hash of downloaded file
         cache_dir:
 
-    Returns: True if file was downloaded, False or Exception otherwise
+    Returns:
+        (String) local path to downloaded file
 
     """
     if local_folder not in [None, '']:
@@ -791,9 +828,9 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
             try:
                 urlretrieve(url, file_path, dl_progress)
             except URLError as e:
-                raise Exception(error_msg.format(url, e.errno, e.reason))
+                raise FailedDownloadError(error_msg.format(url, e.errno, e.reason))
             except HTTPError as e:
-                raise Exception(error_msg.format(url, e.code, e.msg))
+                raise FailedDownloadError(error_msg.format(url, e.code, e.msg))
         except (Exception, KeyboardInterrupt) as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -805,8 +842,8 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
             if not _check_hashes(file_hash, download_hash):
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
-                print("downloaded file has been deleted because of a hash mismatch.")
-                return None
+                raise MismatchedHashError("downloaded file has been deleted because of a hash mismatch.")
+
 
         return file_path
 
@@ -860,6 +897,14 @@ def _check_hashes(hash_a, hash_b):
         return False
 
     return True
+
+
+class FailedDownloadError(Exception):
+    pass
+
+
+class MismatchedHashError(Exception):
+    pass
 
 
 # This is wholesale from keras

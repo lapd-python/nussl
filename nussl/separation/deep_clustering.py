@@ -53,6 +53,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     """
     def __init__(self, input_audio_signal,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
+                 model_path=None,
                  model_name='deep_clustering_vocal_44k_long.model',
                  num_sources=2,
                  num_layers=4,
@@ -88,8 +89,13 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.model = TransformerDeepClustering(num_layers=num_layers,
                                                hidden_size=hidden_size,
                                                embedding_size=embedding_size)
-        self.model_path = utils.download_trained_model(model_name)
+        if model_path:
+            self.model_path = model_path
+        else:
+            self.model_path = utils.download_trained_model(model_name)
+
         self.load_model(self.model_path)
+
         if self.use_cuda:
             self.model.cuda()
         self.clusterer = KMeans(n_clusters=self.num_sources)
