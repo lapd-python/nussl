@@ -5,6 +5,7 @@ import librosa
 import numpy as np
 
 from ..transformers import TransformerDeepClustering
+from ..core import utils
 from sklearn.decomposition import PCA
 import mask_separation_base
 import masks
@@ -52,7 +53,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     """
     def __init__(self, input_audio_signal, 
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 model_path='/media/ext/models/deep_clustering_vocal_44k_long.model', 
+                 model_name='deep_clustering_vocal_44k_long.model',
                  num_sources=2,
                  num_layers=4,
                  hidden_size=500,
@@ -81,10 +82,14 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.mel_spectrogram = None
         self.silence_mask = None
         self.cutoff = cutoff
+        # self.model = TransformerDeepClustering(num_layers=num_layers,
+        #                                        hidden_size=hidden_size,
+        #                                        embedding_size=embedding_size).cuda()
         self.model = TransformerDeepClustering(num_layers=num_layers,
-                                 hidden_size=hidden_size,
-                                embedding_size=embedding_size).cuda()
-        self.load_model(model_path)
+                                               hidden_size=hidden_size,
+                                               embedding_size=embedding_size)
+        self.model_path = utils.download_trained_model(model_name)
+        self.load_model(self.model_path)
         self.clusterer = KMeans(n_clusters=self.num_sources)
         self.embeddings = None
         
@@ -111,7 +116,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.mel_spectrogram /= np.std(self.mel_spectrogram) + 1e-7
     
     def deep_clustering(self):
-        input_data = Variable(torch.FloatTensor(self.mel_spectrogram)).cuda()
+        # input_data = Variable(torch.FloatTensor(self.mel_spectrogram)).cuda()
+        input_data = Variable(torch.FloatTensor(self.mel_spectrogram))
         if self.embeddings is None:
             embeddings = self.model(input_data)
             self.embeddings = embeddings.view(-1, embeddings.size(-1)).cpu().data.numpy()

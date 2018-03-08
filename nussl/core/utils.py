@@ -503,7 +503,7 @@ def verify_mask_separation_base_list(mask_separation_list):
 def print_available_audio_files():
     """gets a list of available audio files for download from the server and displays them
     to the user.
-ls
+
     Args:
 
     Returns:
@@ -532,6 +532,70 @@ ls
         raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_AUDIO_METADATA_URL))
 
 
+def print_available_trained_models():
+    """gets a list of available audio files for download from the server and displays them
+    to the user.
+
+    Args:
+
+    Returns:
+
+    """
+    try:
+        request = Request(constants.NUSSL_EXTRA_MODEL_METADATA_URL)
+
+        # Make sure to get the newest data
+        request.add_header('Pragma', 'no-cache')
+        request.add_header('Cache-Control', 'max-age=0')
+        response = urlopen(request)
+        data = json.loads(response.read())
+        file_metadata = data['nussl Models metadata']
+
+        print('{:30} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+        for f in file_metadata:
+            print('{:30} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+                                                       f['file_size'], f['file_description']))
+        print('\nLast updated {}'.format(data['last_updated']))
+        print('To download one of these files insert the file name '
+              'as the first parameter to nussl.download_trained_model, like so: \n'
+              ' >>> nussl.download_trained_model(\'deep_clustering_model.h5\')')
+
+    except:
+        raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_MODEL_METADATA_URL))
+
+
+def print_available_benchmark_files():
+    """gets a list of available audio files for download from the server and displays them
+    to the user.
+
+    Args:
+
+    Returns:
+
+    """
+    try:
+        request = Request(constants.NUSSL_EXTRA_BENCHMARK_METADATA_URL)
+
+        # Make sure to get the newest data
+        request.add_header('Pragma', 'no-cache')
+        request.add_header('Cache-Control', 'max-age=0')
+        response = urlopen(request)
+        data = json.loads(response.read())
+        file_metadata = data['nussl Benchmarks metadata']
+
+        print('{:30} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+        for f in file_metadata:
+            print('{:30} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+                                                       f['file_size'], f['file_description']))
+        print('\nLast updated {}'.format(data['last_updated']))
+        print('To download one of these files insert the file name '
+              'as the first parameter to nussl.download_benchmark_file, like so: \n'
+              ' >>> nussl.download_benchmark_file(\'example.npy\')')
+
+    except:
+        raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_BENCHMARK_METADATA_URL))
+
+
 
 def download_audio_example(example_name, local_folder=None):
     """downloads the specified Audio file from the NUSSL server.
@@ -545,8 +609,6 @@ def download_audio_example(example_name, local_folder=None):
 
     """
     file_metadata = _download_metadata(example_name, 'audio')
-    print("\naudio file metadata:")
-    print(json.dumps(file_metadata, indent=4))
 
     file_hash = file_metadata['file_hash']
 
@@ -568,8 +630,6 @@ def download_trained_model(model_name, local_folder=None):
 
     """
     file_metadata = _download_metadata(model_name, 'model')
-    print("\nmodel file metadata:")
-    print(json.dumps(file_metadata, indent=4))
 
     file_hash = file_metadata['file_hash']
 
@@ -591,8 +651,6 @@ def download_benchmark_file(benchmark_name, local_folder=None):
 
     """
     file_metadata = _download_metadata(benchmark_name, 'benchmark')
-    print("\nbenchmark file metadata:")
-    print(json.dumps(file_metadata, indent=4))
 
     file_hash = file_metadata['file_hash']
 
@@ -699,7 +757,6 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
             os.makedirs(datadir)
 
     file_path = os.path.join(datadir, file_name)
-    print('Saving file at {}'.format(file_path))
 
     download = False
     if os.path.exists(file_path):
@@ -718,6 +775,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         download = True
 
     if download:
+        print('Saving file at {}'.format(file_path))
         print('Downloading {} from {}'.format(file_name, url))
 
         def dl_progress(count, block_size, total_size):
@@ -748,12 +806,12 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
                 print("downloaded file has been deleted because of a hash mismatch.")
-                return False
+                return None
 
-        return True
+        return file_path
 
     else:
-        return False
+        return file_path
 
     # try:
     #     with open(file_path, 'w') as f:

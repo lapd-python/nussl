@@ -120,9 +120,13 @@ class TestUtils(unittest.TestCase):
         audio_name = 'K0149.wav'
 
         result = nussl.utils.download_audio_example(audio_name)
+        # should return a path to the file, else return None
+        # if I download it, return the path
+        # if i don't download but it exists, return the path
+        # else (big issue) throw exception (write your own exception class)
 
-        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/audio/' + audio_name))
+        assert os.path.isfile(result)
         os.remove(os.path.expanduser('~/.nussl/audio/' + audio_name))
 
     def test_model_download(self):
@@ -131,8 +135,8 @@ class TestUtils(unittest.TestCase):
 
         result = nussl.utils.download_trained_model(model_name)
 
-        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/models/' + model_name))
+        assert os.path.isfile(result)
         os.remove(os.path.expanduser('~/.nussl/models/' + model_name))
 
     def test_benchmark_download(self):
@@ -141,8 +145,8 @@ class TestUtils(unittest.TestCase):
 
         result = nussl.utils.download_benchmark_file(benchmark_name)
 
-        assert result
         assert os.path.isfile(os.path.expanduser('~/.nussl/benchmarks/' + benchmark_name))
+        assert os.path.isfile(result)
         os.remove(os.path.expanduser('~/.nussl/benchmarks/' + benchmark_name))
 
 
