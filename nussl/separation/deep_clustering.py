@@ -36,20 +36,22 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
     arXiv preprint arXiv:1611.06265.
 
     Example:
-        music = AudioSignal("/media/ext/datasets/DSD100/Mixtures/Test/021 - James May - On The Line/mixture.wav",
-                            offset=45,
-                            duration=20)
+        .. code-block:: python
+            :linenos:
+            music = AudioSignal("/media/ext/datasets/DSD100/Mixtures/Test/021 - James May - On The Line/mixture.wav",
+                                offset=45,
+                                duration=20)
 
-        music.stft_params.window_length = 2048
-        music.stft_params.hop_length = 512
+            music.stft_params.window_length = 2048
+            music.stft_params.hop_length = 512
 
-        separation = DeepClustering(music, num_sources = 2)
-        masks = separation.run()
-        sources = separation.make_audio_signals()
-        plt.figure(figsize=(20, 8))
-        separation.plot()
-        plt.tight_layout()
-        plt.show()
+            separation = DeepClustering(music, num_sources = 2)
+            masks = separation.run()
+            sources = separation.make_audio_signals()
+            plt.figure(figsize=(20, 8))
+            separation.plot()
+            plt.tight_layout()
+            plt.show()
     """
     def __init__(self, input_audio_signal,
                  model_path=None,
@@ -110,18 +112,20 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.audio_signal.to_mono(overwrite=True)
 
     def load_model(self, model_path):
-        """
+        """ Loads and evaluates the model in PyTorch. Called during instantiation of the object.
 
         Args:
+            model_path: (String) local path to the model file
 
         Returns:
+
 
         """
         self.model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
         self.model.eval()
 
     def _compute_spectrograms(self):
-        """
+        """ Computes the mel spectrogram of the input audio signal and saves it in self.mel_spectrogram.
 
         Args:
 
@@ -141,7 +145,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.mel_spectrogram /= np.std(self.mel_spectrogram) + 1e-7
 
     def deep_clustering(self):
-        """
+        """ Calculates embeddings via a trained PyTorch neural network and clusters them using K-Means. Saves results
+        in self.assignments and the centroids in self.centroids.
 
         Args:
 
@@ -223,11 +228,12 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
 
     def run(self):
-        """
+        """ Computes spectrograms and runs the deep clustering algorithm, then calculates masks for each source.
 
         Args:
 
         Returns:
+            Masks: (Array) List of calculated mask objects
 
         """
         self._compute_spectrograms()
@@ -260,6 +266,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         Applies individual mask and returns audio_signal object
 
         Args:
+            mask: (Mask object) mask to apply to the AudioSignal object
 
         Returns:
 

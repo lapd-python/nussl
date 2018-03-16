@@ -509,7 +509,8 @@ def print_available_audio_files():
     Returns:
 
     Example:
-        nussl.utils.print_available_audio_files()
+        .. code-block:: python
+            nussl.utils.print_available_audio_files()
 
         File Name                                Duration (sec)  Size       Description
         K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.
@@ -550,7 +551,8 @@ def print_available_trained_models():
     Returns:
 
     Example:
-        nussl.utils.print_available_trained_models()
+        .. code-block:: python
+            nussl.utils.print_available_trained_models()
 
         File Name                                For Class            Size       Description
         deep_clustering_model.h5                 DeepClustering       48.1MiB    example Deep Clustering Keras model
@@ -591,7 +593,8 @@ def print_available_benchmark_files():
     Returns:
 
     Example:
-        nussl.utils.print_available_benchmark_files()
+        .. code-block:: python
+            nussl.utils.print_available_benchmark_files()
 
         File Name                                For Class            Size       Description
         benchmark.npy                            example              11.0B      example benchmark file
@@ -635,8 +638,13 @@ def get_audio_example(example_name, local_folder=None):
         (String) path to the downloaded file
 
     Example:
-        input_file = nussl.utils.download_audio_example('K0140.wav')
-        music = AudioSignal(input_file, offset=45, duration=20)
+        .. code-block:: python
+            :linenos:
+            input_file = nussl.utils.get_audio_example('K0140.wav')
+            music = AudioSignal(input_file, offset=45, duration=20)
+
+    See Also:
+        :ref:`print_available_audio_files` for files that can be obtained from the server using this method
 
     """
     file_metadata = _download_metadata(example_name, 'audio')
@@ -660,7 +668,12 @@ def get_trained_model(model_name, local_folder=None):
         (String) path to the downloaded file
 
     Example:
-        model_path = nussl.utils.download_trained_model('deep_clustering_vocal_44k_long.model')
+        .. code-block:: python
+            model_path = nussl.utils.get_trained_model('deep_clustering_vocal_44k_long.model')
+            separation = DeepClustering(audio, model_path=model_path)
+
+    See Also:
+        :ref:`print_available_trained_models` for files that can be obtained from the server using this method
 
     """
     file_metadata = _download_metadata(model_name, 'model')
@@ -682,6 +695,13 @@ def get_benchmark_file(benchmark_name, local_folder=None):
 
     Returns:
         (String) path to the downloaded file
+
+    Example:
+        .. code-block:: python
+            benchmark = nussl.utils.get_benchmark_file('example.npy')
+
+    See Also:
+        :ref:`print_available_trained_models` for files that can be obtained from the server using this method
 
     """
     file_metadata = _download_metadata(benchmark_name, 'benchmark')
