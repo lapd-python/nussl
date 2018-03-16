@@ -52,9 +52,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         plt.show()
     """
     def __init__(self, input_audio_signal,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
                  model_path=None,
-                 model_name='deep_clustering_vocal_44k_long.model',
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
                  num_sources=2,
                  num_layers=4,
                  hidden_size=500,
@@ -66,6 +65,15 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
                  use_librosa_stft=False,
                  cutoff=-40):
         super(DeepClustering, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
+
+        if model_path:
+            self.model_path = model_path
+        else:
+            raise NoModelError("To use DeepClustering, a trained model is required. "
+                               "To download one of these files insert the file name "
+                               "as the first parameter to nussl.get_trained_model, like so: \n"
+                               " >>> model_path = nussl.get_trained_model('deep_clustering_model.h5')\n"
+                               " >>> dc_obj = DeepClustering(audio_file, model_path=model_path)")
 
         self.resample_rate = resample_rate
         if self.audio_signal.sample_rate != self.resample_rate:
@@ -89,13 +97,8 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.model = TransformerDeepClustering(num_layers=num_layers,
                                                hidden_size=hidden_size,
                                                embedding_size=embedding_size)
-        if model_path:
-            self.model_path = model_path
-        else:
-            self.model_path = utils.download_trained_model(model_name)
 
         self.load_model(self.model_path)
-
         if self.use_cuda:
             self.model.cuda()
         self.clusterer = KMeans(n_clusters=self.num_sources)
@@ -107,10 +110,24 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.audio_signal.to_mono(overwrite=True)
 
     def load_model(self, model_path):
+        """
+
+        Args:
+
+        Returns:
+
+        """
         self.model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
         self.model.eval()
 
     def _compute_spectrograms(self):
+        """
+
+        Args:
+
+        Returns:
+
+        """
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         magnitude = np.abs(self.stft)
         self.mel_spectrogram = np.empty((self.audio_signal.num_channels, self.stft.shape[1], self.num_mels))
@@ -124,6 +141,13 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         self.mel_spectrogram /= np.std(self.mel_spectrogram) + 1e-7
 
     def deep_clustering(self):
+        """
+
+        Args:
+
+        Returns:
+
+        """
         input_data = Variable(torch.FloatTensor(self.mel_spectrogram))
         if self.use_cuda:
             input_data.cuda()
@@ -138,6 +162,13 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
 
     def _extract_masks(self, ch):
+        """
+
+        Args:
+
+        Returns:
+
+        """
         if self.audio_signal.stft_data is None:
             raise ValueError('Cannot extract masks with no signal_stft data')
 
@@ -170,7 +201,12 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
     def generate_mask(self, ch, assignments):
         """
-            Takes binary Mel spectrogram assignments and generates mask
+        Takes a binary Mel spectrogram assignments and generates a mask.
+
+        Args:
+
+        Returns:
+
         """
         if self.audio_signal.stft_data is None:
             raise ValueError('Cannot extract masks with no signal_stft data')
@@ -187,6 +223,13 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
 
     def run(self):
+        """
+
+        Args:
+
+        Returns:
+
+        """
         self._compute_spectrograms()
         self.deep_clustering()
 
@@ -214,7 +257,12 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
 
     def apply_mask(self, mask):
         """
-            Applies individual mask and returns audio_signal object
+        Applies individual mask and returns audio_signal object
+
+        Args:
+
+        Returns:
+
         """
         source = copy.deepcopy(self.audio_signal)
         source = source.apply_mask(mask)
@@ -245,6 +293,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
                 1. PCA of emeddings onto 2 dimensions for visualization
                 2. The mixture mel-spectrogram.
                 3. The source assignments of each tf-bin in the mixture spectrogram.
+
         Returns:
             None
         """
@@ -274,3 +323,7 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
         plt.xlabel('Time (frames)')
         plt.ylabel('Frequency (mel)')
         plt.title('Source assignments')
+
+
+class NoModelError(Exception):
+    pass

@@ -501,7 +501,7 @@ def verify_mask_separation_base_list(mask_separation_list):
 
 
 def print_available_audio_files():
-    """gets a list of available audio files for download from the server and displays them
+    """ Gets a list of available audio files for download from the server and displays them
     to the user.
 
     Args:
@@ -512,10 +512,8 @@ def print_available_audio_files():
         nussl.utils.print_available_audio_files()
 
         File Name                                Duration (sec)  Size       Description
-        dev1_female3_inst_mix.wav                10.0            1.7MiB     Instantaneous mixture of three female speakers talking in a stereo field.
-        dev1_female3_synthconv_130ms_5cm_mix.wav 10.0            1.7MiB     Three female speakers talking in a stereo field, with 130ms of inter-channel delay.
         K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.
-        K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C. (A440)
+        K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C.
 
         Last updated 2018-03-06
 
@@ -544,7 +542,7 @@ def print_available_audio_files():
 
 
 def print_available_trained_models():
-    """gets a list of available audio files for download from the server and displays them
+    """ Gets a list of available audio files for download from the server and displays them
     to the user.
 
     Args:
@@ -577,15 +575,15 @@ def print_available_trained_models():
                                                        f['file_size'], f['file_description']))
         print('\nLast updated {}'.format(data['last_updated']))
         print('To download one of these files insert the file name '
-              'as the first parameter to nussl.download_trained_model, like so: \n'
-              ' >>> nussl.download_trained_model(\'deep_clustering_model.h5\')')
+              'as the first parameter to nussl.get_trained_model, like so: \n'
+              ' >>> nussl.get_trained_model(\'deep_clustering_model.h5\')')
 
     except:
         raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_MODEL_METADATA_URL))
 
 
 def print_available_benchmark_files():
-    """gets a list of available audio files for download from the server and displays them
+    """ Gets a list of available audio files for download from the server and displays them
     to the user.
 
     Args:
@@ -626,8 +624,8 @@ def print_available_benchmark_files():
 
 
 
-def download_audio_example(example_name, local_folder=None):
-    """downloads the specified Audio file from the NUSSL server.
+def get_audio_example(example_name, local_folder=None):
+    """Downloads the specified Audio file from the NUSSL server.
 
     Args:
         example_name: (String) name of the audio file to download
@@ -651,8 +649,8 @@ def download_audio_example(example_name, local_folder=None):
     return result
 
 
-def download_trained_model(model_name, local_folder=None):
-    """downloads the specified Model file from the NUSSL server.
+def get_trained_model(model_name, local_folder=None):
+    """ Downloads the specified Model file from the NUSSL server.
 
     Args:
         model_name: (String) name of the trained model to download
@@ -675,11 +673,11 @@ def download_trained_model(model_name, local_folder=None):
     return result
 
 
-def download_benchmark_file(benchmark_name, local_folder=None):
-    """downloads the specified Benchmark file from the NUSSL server.
+def get_benchmark_file(benchmark_name, local_folder=None):
+    """ Downloads the specified Benchmark file from the NUSSL server.
 
     Args:
-        model_name: (String) name of the trained model to download
+        benchmark_name: (String) name of the trained model to download
         local_folder: (String)  a local folder in which to download the file, defaults to regular NUSSL directory
 
     Returns:
@@ -759,7 +757,6 @@ def _download_metadata(file_name, file_type):
 
 def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, cache_dir=None):
     """
-
     Heavily inspired by and lovingly adapted from keras' `get_file` function:
     https://github.com/fchollet/keras/blob/afbd5d34a3bdbb0916d558f96af197af1e92ce70/keras/utils/data_utils.py#L109
 
@@ -769,7 +766,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         local_folder: (String) alternate folder in which to download the file
         cache_subdir: (String) subdirectory of folder in which to download flie
         file_hash: (String) expected hash of downloaded file
-        cache_dir:
+        cache_dir: (String)
 
     Returns:
         (String) local path to downloaded file
@@ -861,6 +858,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
 
 def _hash_file(file_path, chunk_size=65535):
     """
+    Computes the SHA256 hash of an input file.
 
     Args:
         file_path: System path to the file to be hashed
@@ -881,6 +879,7 @@ def _hash_file(file_path, chunk_size=65535):
 
 def _check_hashes(hash_a, hash_b):
     """
+    Checks if two hashes are equal.
 
     Args:
         hash_a: hash string of hex chars to be compared
