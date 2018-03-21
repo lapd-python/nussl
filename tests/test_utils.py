@@ -131,7 +131,7 @@ class TestUtils(unittest.TestCase):
 
     def test_model_download(self):
 
-        model_name = 'deep_clustering_model.h5'
+        model_name = 'deep_clustering_vocal_44k_long.model'
 
         result = nussl.utils.get_trained_model(model_name)
 

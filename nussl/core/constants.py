@@ -59,14 +59,14 @@ Used in :ref:`audio_signal` and in :ref:`mask_base`.
 
 # ############# nussl-extras urls ############# #
 
-NUSSL_EXTRA_BASE_URL = 'https://ethman.github.io/nussl-extras/'
-NUSSL_EXTRA_ASSETS_BASE_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'assets/')
+NUSSL_EXTRA_BASE_URL = 'http://nussl.ci.northwestern.edu/'
+NUSSL_EXTRA_ASSETS_BASE_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'static/nussl/')
 NUSSL_EXTRA_AUDIO_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'audio/')
-NUSSL_EXTRA_MODELS_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'models/')
+NUSSL_EXTRA_MODELS_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'trained_models/')
 NUSSL_EXTRA_BENCHMARKS_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'benchmarks/')
-NUSSL_EXTRA_AUDIO_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'audio_metadata.json')
-NUSSL_EXTRA_BENCHMARK_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'benchmark_metadata.json')
-NUSSL_EXTRA_MODEL_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'model_metadata.json')
+NUSSL_EXTRA_AUDIO_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'audio-json/')
+NUSSL_EXTRA_BENCHMARK_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'benchmark-json/')
+NUSSL_EXTRA_MODEL_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'model-json/')
 
 USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
 

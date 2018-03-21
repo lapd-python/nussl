@@ -658,7 +658,7 @@ def get_audio_example(example_name, local_folder=None):
 
 
 def get_trained_model(model_name, local_folder=None):
-    """ Downloads the specified Model file from the NUSSL server.
+    """ Downloads the specified Model file from the NUSSL server. #TODO: what if model is already on its computer? How does it check? intricacies
 
     Args:
         model_name: (String) name of the trained model to download
@@ -760,12 +760,11 @@ def _download_metadata(file_name, file_type):
         request.add_header('Cache-Control', 'max-age=0')
         response = urlopen(request)
 
-        data = json.loads(response.read())
-        metadata = data[metadata_labels[file_type]]
+        metadata = json.loads(response.read())
 
         for file_metadata in metadata:
-            if file_metadata['file_name'] == file_name:
-                return file_metadata
+            if file_metadata['fields']['file_name'] == file_name:
+                return file_metadata['fields']
 
         # TODO: do we raise an exception here if the file isn't found on the server?
         print("Metadata: " + file_type + " file metadata not found on server")
@@ -844,6 +843,7 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         try:
             try:
                 urlretrieve(url, file_path, dl_progress)
+                print('\n\n')
             except URLError as e:
                 raise FailedDownloadError(error_msg.format(url, e.errno, e.reason))
             except HTTPError as e:
