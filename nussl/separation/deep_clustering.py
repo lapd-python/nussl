@@ -7,6 +7,7 @@ import numpy as np
 from ..transformers import TransformerDeepClustering
 from ..core import utils
 from sklearn.decomposition import PCA
+from sklearn.utils import check_array
 import mask_separation_base
 import masks
 
@@ -288,6 +289,29 @@ class DeepClustering(mask_separation_base.MaskSeparationBase):
             self.sources.append(self.apply_mask(mask))
 
         return self.sources
+
+    def get_pca(self):
+        return PCA(20).fit(self.embeddings)
+
+    def project_arbitrary_embeddings(self, dim_indices = (0, 1)):
+        """Projects
+
+        dim_indices: 2-tuple of the component indices you want to transform with
+
+        Returns:
+            transformed datal
+        """
+        return self.test_transform(self.get_pca(), self.embeddings, dim_indices)
+
+
+    def test_transform(self, pca, data, dim_indices):
+        data = check_array(data)
+        if pca.mean_ is not None:
+            data = data - pca.mean_
+
+        first, second = dim_indices
+        _components = pca.components_[[first, second], :].T
+        return np.dot(data, _components)
 
     def project_embeddings(self, num_dimensions):
         transform = PCA(n_components=num_dimensions)
